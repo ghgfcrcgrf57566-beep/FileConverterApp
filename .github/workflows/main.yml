@@ -66,6 +66,31 @@ jobs:
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
+        on: [push]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Flutter (pin action + channel)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      # بدلاً من channel يمكنك تحديد نسخة محددة إذا فشل البحث:
+      #- name: Set up Flutter (use specific version)
+      #  uses: subosito/flutter-action@v2
+      #  with:
+      #    flutter-version: '3.10.5'   # مثال: استبدل بالنسخة المطلوبة
+      #    cache: false
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build APK
+        run: flutter build apk --release
         with:
           name: app-release-apks
           path: build/app/outputs/flutter-apk/*.apk
