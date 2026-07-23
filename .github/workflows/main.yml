@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -33,10 +34,11 @@ jobs:
           distribution: temurin
           java-version: '11'
 
-      - name: Install Flutter
+      - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: 'stable'
+          channel: stable
+          cache: true
 
       - name: Flutter pub get
         run: flutter pub get
@@ -48,15 +50,7 @@ jobs:
             chmod +x android/gradlew
           fi
           if [ ! -f android/gradle/wrapper/gradle-wrapper.jar ]; then
-            echo "gradle-wrapper.jar missing — attempting to generate it using Gradle"
-            # Install sdkman and Gradle to generate wrapper (best to commit wrapper into repo permanently)
-            curl -s "https://get.sdkman.io" | bash
-            # shellcheck source=/dev/null
-            source "$HOME/.sdkman/bin/sdkman-init.sh"
-            sdk install gradle || true
-            cd android
-            gradle wrapper
-            cd ..
+            echo "gradle-wrapper.jar missing — please commit android/gradle/wrapper/gradle-wrapper.jar to the repo"
           else
             echo "gradle-wrapper.jar found"
           fi
@@ -66,31 +60,6 @@ jobs:
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
-        on: [push]
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Set up Flutter (pin action + channel)
-        uses: subosito/flutter-action@v2
         with:
-          channel: stable
-          cache: true
-
-      # بدلاً من channel يمكنك تحديد نسخة محددة إذا فشل البحث:
-      #- name: Set up Flutter (use specific version)
-      #  uses: subosito/flutter-action@v2
-      #  with:
-      #    flutter-version: '3.10.5'   # مثال: استبدل بالنسخة المطلوبة
-      #    cache: false
-
-      - name: Install dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release
-        with:
-          name: app-release-apks
+          name: app-release-apk
           path: build/app/outputs/flutter-apk/*.apk
